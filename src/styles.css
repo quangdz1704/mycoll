@@ -26,13 +26,14 @@ h1, h2, h3, p { margin: 0; }
 .topbar-note>span { width: 5px; height: 5px; background: #93a18b; border-radius: 50%; }
 .store-main { max-width: 1060px; margin: auto; padding: 0 10px; }
 .store-profile { position: relative; display: flex; align-items: center; justify-content: space-between; min-height: 184px; padding: 28px 39px; border: 1px solid #eeded0; border-radius: 20px; background: #f5ece2; overflow: hidden; }
-.profile-content { display: flex; align-items: center; gap: 25px; position: relative; z-index: 1; }
+.profile-content { display: flex; align-items: center; gap: 25px; position: relative; z-index: 1; min-width: 0; }
+.profile-copy { min-width: 0; overflow-wrap: anywhere; }
 .avatar-wrap { position: relative; flex-shrink: 0; }
 .avatar { width: 104px; height: 104px; object-fit: cover; border-radius: 50%; border: 5px solid #fffdf7; box-shadow: 0 3px 8px #6752410c; }
 .avatar-sparkle { position: absolute; bottom: 3px; right: 0; width: 28px; height: 28px; display: grid; place-items: center; background: #b6694e; color: white; border: 3px solid #f5ece2; border-radius: 50%; }
 .eyebrow { font-size: 9px; font-weight: 600; letter-spacing: 1.7px; color: #94715d; display: block; }
-.profile-copy h1 { display: flex; align-items: center; gap: 12px; font-size: 32px; letter-spacing: -1.3px; font-weight: 600; margin: 7px 0 8px; line-height: 1.4; }
-.profile-flower { color: #b67056; font-size: 24px; font-weight: 400; }
+.profile-copy h1 { font-size: 32px; letter-spacing: -1.3px; font-weight: 600; margin: 7px 0 8px; line-height: 1.4; overflow-wrap: anywhere; }
+.profile-flower { color: #b67056; font-size: 24px; font-weight: 400; margin-left: 10px; white-space: nowrap; }
 .profile-copy>p { font-size: 12px; line-height: 1.9; color: #7c766c; white-space: pre-line; }
 .social-links { display: flex; align-items: center; gap: 14px; margin-top: 12px; }
 .social-links:empty { display: none; }

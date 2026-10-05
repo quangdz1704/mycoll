@@ -32,7 +32,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [session?.user.id, client]);
   const check = useQuery({ queryKey: ['authorization', session?.user.id, authVersion], queryFn: isAdmin, enabled: !!session, staleTime: 60000, retry: 1 });
   const value = { session, loading: !ready || (!!session && check.isPending), admin: !!session && check.data === true,
-    error: sessionError || (!!session && check.isError), retry: () => { void check.refetch(); } };
+    error: sessionError || (!!session && check.isError), retry: () => {
+      if (sessionError && supabase) {
+        void supabase.auth.getSession().then(({ data, error }) => {
+          setSessionError(!!error); setSession(data.session); setReady(true);
+        }).catch(() => setSessionError(true));
+      } else { void check.refetch(); }
+    } };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 export const useAuth = () => useContext(AuthContext);
