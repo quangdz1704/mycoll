@@ -1,33 +1,305 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, X, ArrowUpRight, Instagram, Facebook, Music2, Sparkles, LayoutGrid, House, Coffee, Headphones, Flower2, Shirt, Heart, LockKeyhole, ArrowDown } from 'lucide-react';
-import { useStoreData } from '../../hooks/useStoreData';
-import { useMeta } from '../../hooks/useMeta';
-import { isConfigured } from '../../services/supabase';
-import { filterProducts } from '../../utils/products';
-import { httpUrl, normalizeVietnamese } from '../../utils/format';
-import { Brand, Photo, Empty, ErrorState } from '../../components/shared/Ui';
-import ProductCard from '../../components/storefront/ProductCard';
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  Search,
+  X,
+  ArrowUpRight,
+  Instagram,
+  Facebook,
+  Music2,
+  Sparkles,
+  LayoutGrid,
+  House,
+  Coffee,
+  Headphones,
+  Flower2,
+  Shirt,
+  Heart,
+  LockKeyhole,
+  ArrowDown,
+} from "lucide-react";
+import { useStoreData } from "../../hooks/useStoreData";
+import { useMeta } from "../../hooks/useMeta";
+import { isConfigured } from "../../services/supabase";
+import { filterProducts } from "../../utils/products";
+import { httpUrl, normalizeVietnamese } from "../../utils/format";
+import { Brand, Photo, Empty, ErrorState } from "../../components/shared/Ui";
+import ProductCard from "../../components/storefront/ProductCard";
 function CategoryIcon({ name }: { name: string }) {
   const normalized = normalizeVietnamese(name);
-  const Icon = /bep|an uong|thuc pham/.test(normalized) ? Coffee : /cong nghe|dien tu/.test(normalized) ? Headphones : /lam dep|cham soc/.test(normalized) ? Flower2 : /thoi trang|quan ao/.test(normalized) ? Shirt : House;
+  const Icon = /bep|an uong|thuc pham/.test(normalized)
+    ? Coffee
+    : /cong nghe|dien tu/.test(normalized)
+      ? Headphones
+      : /lam dep|cham soc/.test(normalized)
+        ? Flower2
+        : /thoi trang|quan ao/.test(normalized)
+          ? Shirt
+          : House;
   return <Icon size={16} strokeWidth={1.7} />;
 }
 function Skeleton() {
-  return <div className="store-skeleton" aria-busy="true" aria-label="Đang tải cửa hàng"><div className="profile-skeleton skeleton" /><div className="search-skeleton skeleton" /><div className="category-skeleton skeleton" /><div className="product-grid">{Array.from({ length: 8 }, (_, i) => <div className="card-skeleton" key={i}><div className="skeleton" /><span className="skeleton" /><span className="skeleton" /></div>)}</div></div>;
+  return (
+    <div
+      className="store-skeleton"
+      aria-busy="true"
+      aria-label="Đang tải cửa hàng"
+    >
+      <div className="profile-skeleton skeleton" />
+      <div className="search-skeleton skeleton" />
+      <div className="category-skeleton skeleton" />
+      <div className="product-grid">
+        {Array.from({ length: 8 }, (_, i) => (
+          <div className="card-skeleton" key={i}>
+            <div className="skeleton" />
+            <span className="skeleton" />
+            <span className="skeleton" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 export default function Storefront() {
   const data = useStoreData();
-  const [search, setSearch] = useState('');
-  const [category, setCategory] = useState('all');
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("all");
   const [limit, setLimit] = useState(24);
   useMeta(data.store.data?.name, data.store.data?.bio);
-  useEffect(() => { setLimit(24); }, [search, category]);
-  useEffect(() => { if (category !== 'all' && data.categories.data && !data.categories.data.some(c => c.id === category)) setCategory('all'); }, [category, data.categories.data]);
-  const visible = useMemo(() => filterProducts(data.products.data || [], search, category), [data.products.data, search, category]);
+  useEffect(() => {
+    setLimit(24);
+  }, [search, category]);
+  useEffect(() => {
+    if (
+      category !== "all" &&
+      data.categories.data &&
+      !data.categories.data.some((c) => c.id === category)
+    )
+      setCategory("all");
+  }, [category, data.categories.data]);
+  const visible = useMemo(
+    () => filterProducts(data.products.data || [], search, category),
+    [data.products.data, search, category],
+  );
   const store = data.store.data;
-  const activeCategory = data.categories.data?.find(c => c.id === category);
-  const socials = [{ label: 'TikTok', url: store?.tiktok_url, icon: Music2 }, { label: 'Instagram', url: store?.instagram_url, icon: Instagram }, { label: 'Facebook', url: store?.facebook_url, icon: Facebook }];
-  const reset = () => { setSearch(''); setCategory('all'); };
-  return <div className="store-page"><a className="skip-link" href="#products">Đến sản phẩm</a><header className="store-topbar"><Link to="/" aria-label="Trang chủ"><Brand /></Link><span className="topbar-note"><span />Chọn bằng yêu thích, chia sẻ bằng chân thành</span></header><main className="store-main">{data.error ? <ErrorState retry={data.retry} /> : data.loading ? <Skeleton /> : store && <><section className="store-profile"><div className="profile-content"><div className="avatar-wrap"><Photo src={store.avatar_url} alt={store.name} className="avatar" eager /><span className="avatar-sparkle"><Sparkles size={13} /></span></div><div className="profile-copy"><span className="eyebrow">CHÀO BẠN, MỪNG BẠN GHÉ NHÀ</span><h1>{store.name}<span className="profile-flower">✳</span></h1><p>{store.bio}</p><div className="social-links">{socials.map(social => httpUrl(social.url) ? <a key={social.label} href={httpUrl(social.url)!} target="_blank" rel="noopener noreferrer"><social.icon size={13} />{social.label}<ArrowUpRight size={11} /></a> : null)}</div></div></div><div className="profile-aside" aria-hidden="true"><span className="profile-star star-one">✦</span><span className="profile-star star-two">✧</span><div className="profile-note"><Heart size={21} strokeWidth={1.4} /><span>những món đồ nhỏ,<br />niềm vui mỗi ngày.</span></div><span className="profile-star star-three">✦</span></div></section><section className="catalog-controls" aria-label="Tìm và lọc sản phẩm"><label className="search-box storefront-search"><Search size={20} strokeWidth={1.7} /><input type="search" placeholder="Bạn đang tìm món gì?" aria-label="Tìm kiếm sản phẩm" value={search} onChange={e => setSearch(e.target.value)} />{search ? <button type="button" className="icon-button" onClick={() => setSearch('')} aria-label="Xóa tìm kiếm"><X size={17} /></button> : <span className="search-hint">Tìm một chút cảm hứng…</span>}</label><nav className="category-tabs" aria-label="Danh mục sản phẩm"><button className={`category-tab ${category === 'all' ? 'active' : ''}`} aria-pressed={category === 'all'} onClick={() => setCategory('all')}><LayoutGrid size={16} />Tất cả</button>{data.categories.data?.map(c => <button key={c.id} className={`category-tab ${category === c.id ? 'active' : ''}`} aria-pressed={category === c.id} onClick={() => setCategory(c.id)}><CategoryIcon name={c.name} />{c.name}</button>)}</nav></section><section id="products" className="catalog"><div className="catalog-heading"><div><span className="eyebrow catalog-eyebrow">GÓC ĐỒ HAY</span><h2>{search.trim() ? 'Những món đồ bạn tìm' : activeCategory ? activeCategory.name : 'Những món đồ mình yêu'}<span className="heading-sparkle">✧</span></h2><p>{search.trim() ? `Kết quả cho “${search.trim()}”` : 'Từ góc nhà đến những ngày ra ngoài. Có thể bạn cũng sẽ thích.'}</p></div><span className="product-count">{visible.length} sản phẩm</span></div>{!isConfigured && <div className="demo-indicator">Bản xem trước <span>·</span> Sản phẩm và mức giá minh họa</div>}{visible.length ? <div className="product-grid">{visible.slice(0, limit).map(product => <ProductCard product={product} key={product.id} />)}</div> : <Empty title={data.products.data?.length ? 'Không tìm thấy sản phẩm phù hợp' : 'Chưa có sản phẩm nào'} description={data.products.data?.length ? 'Thử một từ khóa khác hoặc ghé xem tất cả món đồ nhé.' : 'Chủ nhà đang chọn những món đồ hay. Bạn ghé lại sau nhé.'}>{data.products.data?.length ? <button className="button secondary" onClick={reset}>Xem tất cả sản phẩm</button> : null}</Empty>}{visible.length > limit && <div className="load-more"><button className="button secondary" onClick={() => setLimit(limit + 24)}>Khám phá thêm<ArrowDown size={15} /></button></div>}</section><div className="store-end"><span /> <Heart size={15} strokeWidth={1.6} /> <span /></div><p className="affiliate-note">Một số link là link tiếp thị liên kết. Mình có thể nhận hoa hồng khi bạn mua,<br className="desktop-break" /> giá của bạn vẫn không đổi. Cảm ơn bạn đã ghé nhà ♡</p></>}</main><footer className="store-footer"><span>Gom những điều hay, gửi đến bạn.</span><Link to="/admin" className="admin-entry"><LockKeyhole size={12} />Góc chủ nhà<ArrowUpRight size={12} /></Link></footer></div>;
+  const activeCategory = data.categories.data?.find((c) => c.id === category);
+  const socials = [
+    { label: "TikTok", url: store?.tiktok_url, icon: Music2 },
+    { label: "Instagram", url: store?.instagram_url, icon: Instagram },
+    { label: "Facebook", url: store?.facebook_url, icon: Facebook },
+  ];
+  const reset = () => {
+    setSearch("");
+    setCategory("all");
+  };
+  return (
+    <div className="store-page">
+      <a className="skip-link" href="#products">
+        Đến sản phẩm
+      </a>
+      <header className="store-topbar">
+        <Link to="/" aria-label="Trang chủ">
+          <Brand />
+        </Link>
+        <span className="topbar-note">
+          <span />
+          Chọn bằng yêu thích, chia sẻ bằng chân thành
+        </span>
+      </header>
+      <main className="store-main">
+        {data.error ? (
+          <ErrorState retry={data.retry} />
+        ) : data.loading ? (
+          <Skeleton />
+        ) : (
+          store && (
+            <>
+              <section className="store-profile">
+                <div className="profile-content">
+                  <div className="avatar-wrap">
+                    <Photo
+                      src={store.avatar_url}
+                      alt={store.name}
+                      className="avatar"
+                      eager
+                    />
+                    <span className="avatar-sparkle">
+                      <Sparkles size={13} />
+                    </span>
+                  </div>
+                  <div className="profile-copy">
+                    <span className="eyebrow">CHÀO BẠN, MỪNG BẠN GHÉ NHÀ</span>
+                    <h1>
+                      {store.name}
+                      <span className="profile-flower">✳</span>
+                    </h1>
+                    <p>{store.bio}</p>
+                    <div className="social-links">
+                      {socials.map((social) =>
+                        httpUrl(social.url) ? (
+                          <a
+                            key={social.label}
+                            href={httpUrl(social.url)!}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <social.icon size={13} />
+                            {social.label}
+                            <ArrowUpRight size={11} />
+                          </a>
+                        ) : null,
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className="profile-aside" aria-hidden="true">
+                  <span className="profile-star star-one">✦</span>
+                  <span className="profile-star star-two">✧</span>
+                  <div className="profile-note">
+                    <Heart size={21} strokeWidth={1.4} />
+                    <span>
+                      những món đồ nhỏ,
+                      <br />
+                      niềm vui mỗi ngày.
+                    </span>
+                  </div>
+                  <span className="profile-star star-three">✦</span>
+                </div>
+              </section>
+              <section
+                className="catalog-controls"
+                aria-label="Tìm và lọc sản phẩm"
+              >
+                <label className="search-box storefront-search">
+                  <Search size={20} strokeWidth={1.7} />
+                  <input
+                    type="search"
+                    placeholder="Bạn đang tìm món gì?"
+                    aria-label="Tìm kiếm sản phẩm"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                  {search ? (
+                    <button
+                      type="button"
+                      className="icon-button"
+                      onClick={() => setSearch("")}
+                      aria-label="Xóa tìm kiếm"
+                    >
+                      <X size={17} />
+                    </button>
+                  ) : (
+                    <span className="search-hint">Tìm một chút cảm hứng…</span>
+                  )}
+                </label>
+                <nav className="category-tabs" aria-label="Danh mục sản phẩm">
+                  <button
+                    className={`category-tab ${category === "all" ? "active" : ""}`}
+                    aria-pressed={category === "all"}
+                    onClick={() => setCategory("all")}
+                  >
+                    <LayoutGrid size={16} />
+                    Tất cả
+                  </button>
+                  {data.categories.data?.map((c) => (
+                    <button
+                      key={c.id}
+                      className={`category-tab ${category === c.id ? "active" : ""}`}
+                      aria-pressed={category === c.id}
+                      onClick={() => setCategory(c.id)}
+                    >
+                      <CategoryIcon name={c.name} />
+                      {c.name}
+                    </button>
+                  ))}
+                </nav>
+              </section>
+              <section id="products" className="catalog">
+                <div className="catalog-heading">
+                  <div>
+                    <span className="eyebrow catalog-eyebrow">GÓC ĐỒ HAY</span>
+                    <h2>
+                      {search.trim()
+                        ? "Những món đồ bạn tìm"
+                        : activeCategory
+                          ? activeCategory.name
+                          : "Những món đồ mình yêu"}
+                      <span className="heading-sparkle">✧</span>
+                    </h2>
+                    <p>
+                      {search.trim()
+                        ? `Kết quả cho “${search.trim()}”`
+                        : "Từ góc nhà đến những ngày ra ngoài. Có thể bạn cũng sẽ thích."}
+                    </p>
+                  </div>
+                  <span className="product-count">
+                    {visible.length} sản phẩm
+                  </span>
+                </div>
+                {!isConfigured && (
+                  <div className="demo-indicator">
+                    Bản xem trước <span>·</span> Sản phẩm và mức giá minh họa
+                  </div>
+                )}
+                {visible.length ? (
+                  <div className="product-grid">
+                    {visible.slice(0, limit).map((product) => (
+                      <ProductCard product={product} key={product.id} />
+                    ))}
+                  </div>
+                ) : (
+                  <Empty
+                    title={
+                      data.products.data?.length
+                        ? "Không tìm thấy sản phẩm phù hợp"
+                        : "Chưa có sản phẩm nào"
+                    }
+                    description={
+                      data.products.data?.length
+                        ? "Thử một từ khóa khác hoặc ghé xem tất cả món đồ nhé."
+                        : "Chủ nhà đang chọn những món đồ hay. Bạn ghé lại sau nhé."
+                    }
+                  >
+                    {data.products.data?.length ? (
+                      <button className="button secondary" onClick={reset}>
+                        Xem tất cả sản phẩm
+                      </button>
+                    ) : null}
+                  </Empty>
+                )}
+                {visible.length > limit && (
+                  <div className="load-more">
+                    <button
+                      className="button secondary"
+                      onClick={() => setLimit(limit + 24)}
+                    >
+                      Khám phá thêm
+                      <ArrowDown size={15} />
+                    </button>
+                  </div>
+                )}
+              </section>
+              <div className="store-end">
+                <span /> <Heart size={15} strokeWidth={1.6} /> <span />
+              </div>
+              <p className="affiliate-note">
+                Một số link là link tiếp thị liên kết. Mình có thể nhận hoa hồng
+                khi bạn mua,
+                <br className="desktop-break" /> giá của bạn vẫn không đổi. Cảm
+                ơn bạn đã ghé nhà ♡
+              </p>
+            </>
+          )
+        )}
+      </main>
+      <footer className="store-footer">
+        <span>Gom những điều hay, gửi đến bạn.</span>
+        <Link to="/admin" className="admin-entry">
+          <LockKeyhole size={12} />
+          Góc chủ nhà
+          <ArrowUpRight size={12} />
+        </Link>
+      </footer>
+    </div>
+  );
 }

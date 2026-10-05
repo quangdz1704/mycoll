@@ -1,23 +1,48 @@
 <!doctype html>
-<html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kiểm thử upload ảnh</title></head>
-<body><h1>Kiểm thử nén và upload ảnh</h1><p>Chỉ chạy với fixture localhost sau khi đăng nhập admin và tạo sản phẩm thử nghiệm.</p><button id="upload">Kiểm tra upload ảnh mẫu</button><pre id="result" role="status">Chưa chạy</pre><script type="module">
-import { uploadImage } from '/src/services/storage.service.ts';
-import { getStore } from '/src/services/store.service.ts';
-import { getProducts, saveProduct } from '/src/services/products.service.ts';
-const button = document.getElementById('upload');
-button.addEventListener('click', async () => {
-  button.disabled = true;
-  try {
-    const store = await getStore();
-    const products = await getProducts(store.id, true);
-    const product = products.find(p => p.name.includes('kiểm thử'));
-    if (!product) throw new Error('Tạo sản phẩm kiểm thử trước');
-    const response = await fetch('/images/mug.webp');
-    const file = new File([await response.blob()], 'mug.webp', { type: 'image/webp' });
-    const image = await uploadImage(file, store.id, 'product-images');
-    await saveProduct({ ...product, image_url: image.url }, product.id);
-    document.getElementById('result').textContent = 'PASS: ảnh được nén, upload và lưu vào sản phẩm.\n' + image.url;
-  } catch (error) { document.getElementById('result').textContent = 'FAIL: ' + error.message; }
-  finally { button.disabled = false; }
-});
-</script></body></html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Kiểm thử upload ảnh</title>
+  </head>
+  <body>
+    <h1>Kiểm thử nén và upload ảnh</h1>
+    <p>
+      Chỉ chạy với fixture localhost sau khi đăng nhập admin và tạo sản phẩm thử
+      nghiệm.
+    </p>
+    <button id="upload">Kiểm tra upload ảnh mẫu</button>
+    <pre id="result" role="status">Chưa chạy</pre>
+    <script type="module">
+      import { uploadImage } from "/src/services/storage.service.ts";
+      import { getStore } from "/src/services/store.service.ts";
+      import {
+        getProducts,
+        saveProduct,
+      } from "/src/services/products.service.ts";
+      const button = document.getElementById("upload");
+      button.addEventListener("click", async () => {
+        button.disabled = true;
+        try {
+          const store = await getStore();
+          const products = await getProducts(store.id, true);
+          const product = products.find((p) => p.name.includes("kiểm thử"));
+          if (!product) throw new Error("Tạo sản phẩm kiểm thử trước");
+          const response = await fetch("/images/mug.webp");
+          const file = new File([await response.blob()], "mug.webp", {
+            type: "image/webp",
+          });
+          const image = await uploadImage(file, store.id, "product-images");
+          await saveProduct({ ...product, image_url: image.url }, product.id);
+          document.getElementById("result").textContent =
+            "PASS: ảnh được nén, upload và lưu vào sản phẩm.\n" + image.url;
+        } catch (error) {
+          document.getElementById("result").textContent =
+            "FAIL: " + error.message;
+        } finally {
+          button.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>
