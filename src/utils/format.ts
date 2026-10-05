@@ -13,3 +13,8 @@ export function errorMessage(error: unknown) {
   return 'Có lỗi xảy ra. Vui lòng thử lại.';
 }
 export const platformLabels = { shopee: 'Shopee', tiktok: 'TikTok Shop', lazada: 'Lazada', other: 'Cửa hàng' };
+// Only explicit database validation/permission rejections prove the write did not commit.
+// Transport failures may occur AFTER a commit; preserve the uploaded image in that case.
+export function isRejectedWrite(error: unknown) {
+  return typeof error === 'object' && error !== null && 'code' in error && /^(22|23|42501)/.test(String(error.code));
+}

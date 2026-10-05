@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { normalizeVietnamese, slugify, httpUrl } from '../src/utils/format';
+import { normalizeVietnamese, slugify, httpUrl, isRejectedWrite } from '../src/utils/format';
 import { filterProducts, sortProducts } from '../src/utils/products';
 import { productSchema, categorySchema, storeSchema } from '../src/lib/validation';
 import { demoProducts } from '../src/lib/demo';
@@ -53,5 +53,12 @@ describe('Admin input validation', () => {
   it('validates social URLs and allows blank optional links', () => {
     expect(storeSchema.parse({ name: 'Nhà Quang', bio: '', avatar_url: '', tiktok_url: '', facebook_url: '', instagram_url: '' }).tiktok_url).toBe(null);
     expect(storeSchema.safeParse({ name: ' ', bio: null, avatar_url: null, tiktok_url: null, facebook_url: null, instagram_url: null }).success).toBe(false);
+  });
+  it('preserves images on ambiguous failures after a possible database commit', () => {
+    expect(isRejectedWrite(new Error('Failed to fetch'))).toBe(false);
+    expect(isRejectedWrite({ code: '', message: 'Network error' })).toBe(false);
+    expect(isRejectedWrite({ code: 'PGRST116' })).toBe(false);
+    expect(isRejectedWrite({ code: '23514' })).toBe(true);
+    expect(isRejectedWrite({ code: '42501' })).toBe(true);
   });
 });

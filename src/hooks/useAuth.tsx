@@ -10,14 +10,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [ready, setReady] = useState(!supabase);
   const [sessionError, setSessionError] = useState(false);
+  const [authVersion, setAuthVersion] = useState(0);
   const client = useQueryClient();
   useEffect(() => {
     if (!supabase) return;
     let live = true;
     let authEventReceived = false;
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, next) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, next) => {
       authEventReceived = true;
       if (live) { setSession(next); setReady(true); setSessionError(false); }
+      if (live && ['SIGNED_IN', 'SIGNED_OUT', 'USER_UPDATED'].includes(event)) setAuthVersion(version => version + 1);
     });
     void supabase.auth.getSession().then(({ data, error }) => {
       if (live && !authEventReceived) { setSession(data.session); setSessionError(!!error); setReady(true); }
@@ -26,8 +28,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
   useEffect(() => {
     client.removeQueries({ predicate: query => query.queryKey[0] === 'admin' });
+    void client.resetQueries({ queryKey: ['public'] });
   }, [session?.user.id, client]);
-  const check = useQuery({ queryKey: ['authorization', session?.user.id], queryFn: isAdmin, enabled: !!session, staleTime: 60000, retry: 1 });
+  const check = useQuery({ queryKey: ['authorization', session?.user.id, authVersion], queryFn: isAdmin, enabled: !!session, staleTime: 60000, retry: 1 });
   const value = { session, loading: !ready || (!!session && check.isPending), admin: !!session && check.data === true,
     error: sessionError || (!!session && check.isError), retry: () => { void check.refetch(); } };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

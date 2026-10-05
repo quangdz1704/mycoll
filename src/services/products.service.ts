@@ -8,12 +8,13 @@ export async function getProducts(storeId: string, admin = false): Promise<Produ
   if (!supabase) return demoProducts;
   const products: Product[] = [];
   for (let page = 0; page < 100; page++) {
-    let query = supabase.from('products').select(fields).eq('store_id', storeId)
+    let query = supabase.from('products').select(admin ? fields : `${fields},categories!inner(is_active)`).eq('store_id', storeId)
       .order('is_pinned', { ascending: false }).order('sort_order').order('created_at', { ascending: false }).order('id');
-    if (!admin) query = query.eq('is_active', true);
-    const { data, error } = await query.range(page * 500, page * 500 + 499);
+    // Admin sessions bypass the public RLS policy, so enforce visibility in the query too.
+    if (!admin) query = query.eq('is_active', true).eq('categories.is_active', true);
+    const { data, error } = await query.range(page * 500, page * 500 + 499).returns<Product[]>();
     if (error) throw error;
-    products.push(...data as Product[]);
+    products.push(...data);
     if (data.length < 500) return sortProducts(products);
   }
   throw new Error('Danh sách quá lớn cho V1. Vui lòng bổ sung phân trang phía máy chủ.');
